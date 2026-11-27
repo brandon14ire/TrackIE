@@ -111,13 +111,6 @@ export async function fetchStop(atco: string): Promise<Stop | null> {
   return page.results[0] ?? null;
 }
 
-export async function fetchStopByNaptan(code: string): Promise<Stop | null> {
-  const page = await getJson<Page<Stop>>(
-    `${BUSTIMES}/api/stops/?naptan_code__iexact=${encodeURIComponent(code)}`,
-  );
-  return page.results[0] ?? null;
-}
-
 export async function fetchServicesAtStop(atco: string): Promise<Service[]> {
   const services = await getAllPages<Service>(
     `${BUSTIMES}/api/services/?stops=${encodeURIComponent(atco)}&limit=100`,

@@ -1,12 +1,14 @@
 # Next Bus
 
 A small, installable web app (PWA) that shows live bus departures for your
-stop, using the same data as [bustimes.org](https://bustimes.org). Nothing is
-saved to start with: save any stop in Great Britain or Ireland and the stop
-name at the top becomes a dropdown of your saved stops. The app opens on the
-first one you saved, or on the Stops page if you haven't saved any.
+stop, using the same data as [bustimes.org](https://bustimes.org).
 
-- **Stops** (top right) finds stops near you or by code; **Back to
+The first time it opens (or any time no stops are saved) it shows a welcome
+screen listing the stops near you. If location is off, you pick your stop on
+a map instead. The first stop you open is saved, and the app opens there from
+then on. Saved stops make up the dropdown under the stop name at the top.
+
+- **Stops** (top right) finds more stops near you or on a map; **Back to
   departures** returns to the board.
 - Tap **Save** on a stop to add it to the dropdown; tap it again (or the ✕ on
   the Stops page) to remove it.
@@ -22,7 +24,8 @@ first one you saved, or on the Stops page if you haven't saved any.
   Next Bus open (phones pause web apps in the background).
 - Refreshes every 30 seconds while it's open; pauses in the background.
 - Works offline: opens instantly and falls back to timetable times.
-- Find stops near you, or open one by code or bustimes.org link.
+- Find stops near you, or pick one on a map ([OpenStreetMap](https://www.openstreetmap.org/)
+  with [Leaflet](https://leafletjs.com/), loaded only when a map is shown).
 - Light and dark mode, screen-reader friendly, no accounts or tracking.
 
 ## How it gets the times

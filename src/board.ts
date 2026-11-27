@@ -45,6 +45,10 @@ interface State {
   weather: Weather | null;
   loading: boolean;
   error: string | null;
+  /** No stops were saved when this one opened, so save it once its name is known. */
+  autoSave: boolean;
+  /** Shows the note saying this stop was saved for them. */
+  savedNote: boolean;
 }
 
 let state: State | null = null;
@@ -70,6 +74,26 @@ async function getStopInfo(atco: string): Promise<StopInfo | null> {
   };
   cacheSet(key, info, 7 * 24 * 60 * 60_000);
   return info;
+}
+
+/** The first stop someone opens becomes their saved stop, so the app opens there next time. */
+function maybeAutoSave(s: State): void {
+  if (!s.autoSave || !s.atcos.every((a) => s.stops[a])) return;
+  s.autoSave = false;
+  if (getFavourites().length) return;
+  saveFavourite({ atco: s.atco, name: stopTitle(s) });
+  s.savedNote = true;
+  announce('Saved. Next Bus will open here.');
+}
+
+function renderSavedNote(): string {
+  return `
+    <div class="note" role="status">
+      <p><strong>Saved.</strong> Next Bus will open here. Add more stops from <strong>Stops</strong> (top right).</p>
+      <button class="icon-button" data-action="dismiss-note" aria-label="Dismiss">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>`;
 }
 
 function isCombined(s: State): boolean {
@@ -340,6 +364,7 @@ function renderBody(s: State, now: number): string {
       : '';
 
   return `
+    ${s.savedNote ? renderSavedNote() : ''}
     ${renderFollow(s, now)}
     ${chips}
     <div class="status">
@@ -409,6 +434,7 @@ async function refresh(manual = false): Promise<void> {
       if (info) s.stops[a] = info;
     });
     s.error = null;
+    maybeAutoSave(s);
     cacheSet(snapshotKey(s.atco), board, SNAPSHOT_MAX_AGE_MS);
     void refreshWeather(s);
     if (manual) announce('Departures updated');
@@ -453,6 +479,10 @@ function onClick(event: MouseEvent): void {
   switch (target.dataset.action) {
     case 'refresh':
       void refresh(true);
+      break;
+    case 'dismiss-note':
+      state.savedNote = false;
+      render();
       break;
     case 'favourite': {
       const saved = getFavourite(atco);
@@ -572,7 +602,10 @@ export function showBoard(container: HTMLElement, atco: string): () => void {
     weather: null,
     loading: false,
     error: null,
+    autoSave: getFavourites().length === 0,
+    savedNote: false,
   };
+  maybeAutoSave(state);
   document.title = `${stopTitle(state)} · Next Bus`;
   render();
   void refresh().then(() => {
