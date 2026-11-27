@@ -308,8 +308,11 @@ function render(): void {
     lastHead = '';
   }
 
-  // Redrawing replaces buttons, so put keyboard focus back after.
-  const focused = root.contains(document.activeElement) ? (document.activeElement as HTMLElement).dataset : null;
+  // Redrawing replaces buttons, so put keyboard focus back after. Only for
+  // keyboard focus: a tapped button keeps focus too, and moving that around
+  // would slide open a different bus's alert button.
+  const active = document.activeElement as HTMLElement | null;
+  const focused = active && root.contains(active) && active.matches(':focus-visible') ? active.dataset : null;
 
   const headHtml = renderHead(s);
   if (headHtml !== lastHead) {
@@ -320,8 +323,11 @@ function render(): void {
   if (!swipes.dragging) body.innerHTML = renderBody(s, Date.now());
 
   if (focused?.action && !root.contains(document.activeElement)) {
+    // The same button: the same route chip, or the same bus's alert button.
     const selector = `[data-action="${focused.action}"]${
       focused.route !== undefined ? `[data-route="${CSS.escape(focused.route)}"]` : ''
+    }${focused.trip !== undefined ? `[data-trip="${CSS.escape(focused.trip)}"]` : ''}${
+      focused.stop !== undefined ? `[data-stop="${CSS.escape(focused.stop)}"]` : ''
     }`;
     root.querySelector<HTMLElement>(selector)?.focus();
   }

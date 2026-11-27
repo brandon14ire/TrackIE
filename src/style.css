@@ -1257,7 +1257,7 @@ input:not([type]) {
 }
 
 .swipe.open .swipe-content,
-.swipe:focus-within .swipe-content {
+.swipe:has(.swipe-action:focus-visible) .swipe-content {
   transform: translateX(-96px);
 }
 
@@ -1287,8 +1287,9 @@ input:not([type]) {
 }
 
 /* Invisible while closed, so it can't peek out at the rounded corners. Still
-   focusable: tabbing to it slides the row open (:focus-within above). */
-.swipe:not(.open):not(.dragging):not(:focus-within) .swipe-action {
+   focusable: tabbing to it slides the row open (:focus-visible above; a tap
+   leaves focus on it too, but that mustn't hold the row open). */
+.swipe:not(.open):not(.dragging):not(:has(.swipe-action:focus-visible)) .swipe-action {
   opacity: 0;
 }
 

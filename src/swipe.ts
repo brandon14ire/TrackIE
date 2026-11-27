@@ -1,7 +1,7 @@
 // Swipe a departure left to reveal the action behind it (the alert button).
 // Markup: <div class="swipe" data-swipe="key"><button class="swipe-action">…
 // </button><div class="swipe-content">…</div></div>. Keyboard users reach the
-// action by tabbing to it, which slides the row open (see :focus-within in CSS).
+// action by tabbing to it, which slides the row open (see :focus-visible in CSS).
 
 /** How far an open row slides; matches .swipe-action's width in CSS. */
 const OPEN_PX = 96;
