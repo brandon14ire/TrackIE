@@ -2,6 +2,7 @@ import './style.css';
 import { showBoard } from './board';
 import { initPwa, isStandalone, promptInstall } from './pwa';
 import { showStops } from './stops';
+import { showWelcome } from './welcome';
 import { getFavourites, pruneCache } from './store';
 import { onAlert, startFollowWatcher } from './follow';
 import { recordSpot } from './spotter';
@@ -16,13 +17,14 @@ function route(): void {
   const stopMatch = hash.match(/^\/stop\/([^/]+)$/);
 
   let next: string;
+  const [home] = getFavourites();
   if (stopMatch) next = `stop:${decodeURIComponent(stopMatch[1])}`;
   else if (hash === '/stops') next = 'stops';
+  else if (hash === '/welcome' && !home) next = 'welcome';
   else {
     // Open on the first saved stop (the dropdown switches from there), or on
-    // the Stops page when nothing is saved yet.
-    const [home] = getFavourites();
-    location.replace(home ? `#/stop/${encodeURIComponent(home.atco)}` : '#/stops');
+    // the welcome screen when nothing is saved yet.
+    location.replace(home ? `#/stop/${encodeURIComponent(home.atco)}` : '#/welcome');
     return;
   }
   if (next === currentRoute) return;
@@ -30,7 +32,14 @@ function route(): void {
 
   teardown?.();
   window.scrollTo(0, 0);
-  teardown = next === 'stops' ? showStops(app) : showBoard(app, next.slice('stop:'.length));
+  // The welcome screen is a clean first step, without the top bar.
+  document.body.classList.toggle('is-welcome', next === 'welcome');
+  teardown =
+    next === 'stops'
+      ? showStops(app)
+      : next === 'welcome'
+        ? showWelcome(app)
+        : showBoard(app, next.slice('stop:'.length));
   if (next === 'stops' && scrollToInstall) {
     scrollToInstall = false;
     document.getElementById('install')?.scrollIntoView({ block: 'start' });

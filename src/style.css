@@ -804,8 +804,119 @@ input:not([type]) {
   font-size: 1rem; /* 16px+ stops iOS zooming on focus */
 }
 
-.lookup .warn {
-  margin: 10px 0 0;
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#map-slot {
+  margin-top: 12px;
+}
+
+/* --- Map ---------------------------------------------------------------- */
+
+.stop-map-wrap {
+  position: relative;
+}
+
+.stop-map {
+  height: min(60vh, 440px);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* The icon sizing above would squash Leaflet's pin layer to icon size. */
+.stop-map svg {
+  width: auto;
+  height: auto;
+}
+
+.map-hint {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  max-width: calc(100% - 120px);
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+  pointer-events: none;
+}
+
+.map-hint[hidden] {
+  display: none;
+}
+
+.map-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 150px;
+  font-family: var(--font);
+  font-size: 0.95rem;
+}
+
+.map-popup-routes {
+  color: #5b6672;
+}
+
+.map-popup .button {
+  margin-top: 6px;
+  text-decoration: none;
+  min-height: 40px;
+  color: #ffffff;
+  background: #0f6b4f;
+  border-color: #0f6b4f;
+}
+
+/* --- Welcome screen ----------------------------------------------------- */
+
+.is-welcome .topbar {
+  display: none;
+}
+
+.welcome {
+  padding-top: max(12px, env(safe-area-inset-top));
+}
+
+.welcome-logo {
+  display: block;
+  margin: 8px 0 14px;
+}
+
+.welcome-lede {
+  margin: 6px 0 20px;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+/* --- Saved note on the board -------------------------------------------- */
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 12px 0;
+  padding: 4px 0 4px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+
+.note p {
+  flex: 1;
+  margin: 8px 0;
 }
 
 #install {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Departure } from '../src/departures';
-import { countdown, distanceMetres, distanceText, escapeHtml, parseStopInput, punctuality, stopsAwayText } from '../src/format';
+import { countdown, distanceMetres, distanceText, escapeHtml, punctuality, stopsAwayText } from '../src/format';
 
 const now = Date.parse('2026-10-22T14:51:00Z');
 const dep = (overrides: Partial<Departure>): Departure => ({
@@ -56,18 +56,5 @@ describe('labels', () => {
 
   it('escapes HTML', () => {
     expect(escapeHtml('<b>"Tom & Jerry\'s"</b>')).toBe('&lt;b&gt;&quot;Tom &amp; Jerry&#39;s&quot;&lt;/b&gt;');
-  });
-});
-
-describe('parseStopInput', () => {
-  it('accepts raw codes and bustimes.org links', () => {
-    expect(parseStopInput(' 8400B6370801 ')).toBe('8400B6370801');
-    expect(parseStopInput('https://bustimes.org/stops/8400B6370801')).toBe('8400B6370801');
-    expect(parseStopInput('https://bustimes.org/stops/8400B6370801/departures?date=x')).toBe('8400B6370801');
-  });
-
-  it('rejects junk', () => {
-    expect(parseStopInput('')).toBeNull();
-    expect(parseStopInput('not a stop code!')).toBeNull();
   });
 });

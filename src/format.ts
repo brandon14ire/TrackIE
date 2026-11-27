@@ -54,12 +54,3 @@ export function distanceText(metres: number): string {
   if (metres < 1000) return `${Math.round(metres / 10) * 10} m`;
   return `${(metres / 1000).toFixed(1)} km`;
 }
-
-/** Pulls a stop code out of a bustimes.org link or raw text. */
-export function parseStopInput(input: string): string | null {
-  const text = input.trim();
-  if (!text) return null;
-  const fromUrl = text.match(/\/stops\/([A-Za-z0-9-]+)/);
-  if (fromUrl) return fromUrl[1];
-  return /^[A-Za-z0-9-]{4,20}$/.test(text) ? text : null;
-}
