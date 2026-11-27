@@ -5,8 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>TrackIE</title>
     <meta name="description" content="Live bus tracking and departures for your stop, powered by bustimes.org.">
-    <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#101418" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f6f7f9">
+    <script>
+      // The status bar matches the page background (--bg in style.css) in light
+      // and dark mode. One tag, updated here, because installed apps often ignore
+      // theme-color tags that rely on a media query.
+      (function () {
+        var meta = document.querySelector('meta[name="theme-color"]');
+        var dark = window.matchMedia('(prefers-color-scheme: dark)');
+        function update() {
+          meta.setAttribute('content', dark.matches ? '#101418' : '#f6f7f9');
+        }
+        update();
+        if (dark.addEventListener) dark.addEventListener('change', update);
+        else if (dark.addListener) dark.addListener(update);
+      })();
+    </script>
     <meta name="color-scheme" content="light dark">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -26,9 +40,8 @@
         <span>Track<span class="brand-ie">IE</span></span>
       </a>
       <nav aria-label="Main">
-        <a class="nav-link" href="#/settings" data-nav="settings">
+        <a class="nav-link icon-only" href="#/settings" data-nav="settings" aria-label="Settings" title="Settings">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-          Settings
         </a>
       </nav>
     </header>

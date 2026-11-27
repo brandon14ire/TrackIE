@@ -26,6 +26,27 @@ export function countdown(d: Departure, now: number): { value: string; unit: str
   return { value: clock, unit: '', label: `at ${clock}` };
 }
 
+/**
+ * The time a bus calls, as HTML. When live tracking moves it, the timetabled
+ * time is struck through before the new one: <s>18:00</s> 18:04.
+ */
+export function clockHtml(scheduled: number, expected: number | null): string {
+  const sched = formatClock(scheduled);
+  if (expected === null || formatClock(expected) === sched) return `<span class="clock">${sched}</span>`;
+  const now = formatClock(expected);
+  return (
+    `<span class="clock" aria-hidden="true"><s>${sched}</s> <strong>${now}</strong></span>` +
+    `<span class="visually-hidden">${now}, timetabled ${sched}</span>`
+  );
+}
+
+/** The same in plain text, for notifications: "at 18:00" or "now 18:04, not 18:00". */
+export function clockText(scheduled: number, expected: number | null): string {
+  const sched = formatClock(scheduled);
+  if (expected === null || formatClock(expected) === sched) return `at ${sched}`;
+  return `now ${formatClock(expected)}, not ${sched}`;
+}
+
 /** "3 min late", "On time", "Running early", or null if not tracked. */
 export function punctuality(d: Departure): string | null {
   if (d.delay === null) return null;
@@ -37,6 +58,7 @@ export function punctuality(d: Departure): string | null {
 
 export function stopsAwayText(stops: number | null): string | null {
   if (stops === null) return null;
+  if (stops === 0) return 'At stop';
   return stops === 1 ? '1 stop away' : `${stops} stops away`;
 }
 

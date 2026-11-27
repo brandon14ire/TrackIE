@@ -20,7 +20,8 @@ you open is saved for you.
 - The main screen greets you with the date and current weather near your
   first saved stop (icon, temperature and chance of rain) from
   [Open-Meteo](https://open-meteo.com/), free and with no API key.
-- Tap the bell on any bus to follow it: a card shows it coming, and you get
+- Swipe a bus left and tap **Alert me** to follow it: a slim strip on the main
+  screen and stop screens shows it coming, and you get
   a notification when it's 10 minutes away. This runs in the app, so it needs
   TrackIE open (phones pause web apps in the background).
 - Refreshes every 30 seconds while it's open; pauses in the background.

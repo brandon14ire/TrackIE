@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Departure } from '../src/departures';
-import { countdown, distanceMetres, distanceText, escapeHtml, punctuality, stopsAwayText } from '../src/format';
+import { clockHtml, clockText, countdown, distanceMetres, distanceText, escapeHtml, punctuality, stopsAwayText } from '../src/format';
 
 const now = Date.parse('2026-10-22T14:51:00Z');
 const dep = (overrides: Partial<Departure>): Departure => ({
@@ -44,6 +44,7 @@ describe('labels', () => {
 
   it('describes stops away', () => {
     expect(stopsAwayText(null)).toBeNull();
+    expect(stopsAwayText(0)).toBe('At stop');
     expect(stopsAwayText(1)).toBe('1 stop away');
     expect(stopsAwayText(4)).toBe('4 stops away');
   });
@@ -56,5 +57,21 @@ describe('labels', () => {
 
   it('escapes HTML', () => {
     expect(escapeHtml('<b>"Tom & Jerry\'s"</b>')).toBe('&lt;b&gt;&quot;Tom &amp; Jerry&#39;s&quot;&lt;/b&gt;');
+  });
+});
+
+describe('clock times', () => {
+  const at = (hhmm: string) => Date.parse(`2026-10-22T${hhmm}:00Z`) - 60 * 60_000; // Irish summer time
+  it('shows one time when the bus is on schedule or not tracked', () => {
+    expect(clockHtml(at('18:00'), null)).toBe('<span class="clock">18:00</span>');
+    expect(clockHtml(at('18:00'), at('18:00') + 20_000)).toBe('<span class="clock">18:00</span>');
+    expect(clockText(at('18:00'), null)).toBe('at 18:00');
+  });
+
+  it('strikes through the timetabled time when the bus is running off it', () => {
+    const html = clockHtml(at('18:00'), at('18:04'));
+    expect(html).toContain('<s>18:00</s> <strong>18:04</strong>');
+    expect(html).toContain('18:04, timetabled 18:00');
+    expect(clockText(at('18:00'), at('18:04'))).toBe('now 18:04, not 18:00');
   });
 });

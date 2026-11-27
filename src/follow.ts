@@ -4,7 +4,8 @@
 // can't run anything without a push server.
 import { loadBoard, type Departure } from './departures';
 import { readSetting, writeSetting } from './store';
-import { formatClock, minutesUntil } from './time';
+import { minutesUntil } from './time';
+import { clockText, stopsAwayText } from './format';
 
 export const ALERT_MINUTES = 10;
 const CHECK_MS = 30_000;
@@ -144,8 +145,8 @@ export function startFollowWatcher(): void {
 export function alertText(f: Followed, now: number): { title: string; body: string } {
   const minutes = minutesUntil(followedTime(f), now);
   const title = minutes <= 1 ? `🚌 Your ${f.line} is due now!` : `🚌 Your ${f.line} is ${minutes} min away`;
-  const when = f.expected !== null ? `expected ${formatClock(f.expected)}` : `due ${formatClock(f.scheduled)}`;
-  const away = f.stopsAway === null ? '' : ` · ${f.stopsAway} ${f.stopsAway === 1 ? 'stop' : 'stops'} away`;
+  const when = clockText(f.scheduled, f.expected);
+  const away = f.stopsAway === null ? '' : ` · ${stopsAwayText(f.stopsAway)!.toLowerCase()}`;
   return { title, body: `To ${f.destination} from ${f.stopName}, ${when}${away}. Time to head to the stop!` };
 }
 

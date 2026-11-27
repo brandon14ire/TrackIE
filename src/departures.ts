@@ -29,6 +29,11 @@ const MIN_DEPARTURES = 3;
 const STALE_VEHICLE_MS = 10 * MINUTE;
 /** Untracked buses drop off the board this long after their scheduled time. */
 const SCHEDULED_GRACE_MS = MINUTE;
+/**
+ * bustimes.org gives a bus's progress from its last stop (0) to its next (1).
+ * Within this much of either end, the bus is treated as at that stop.
+ */
+const AT_STOP_PROGRESS = 0.05;
 /** Parallel trip lookups, kept low to be gentle on bustimes.org. */
 const TRIP_CONCURRENCY = 4;
 
@@ -108,18 +113,25 @@ export function buildDepartures(
     // Only trust a vehicle running today's instance of this trip.
     const live = vehicle && (!vehicle.date || vehicle.date === date) ? vehicle : undefined;
 
+    // Stops still to go: 0 means the bus is at this stop now.
     let stopsAway: number | null = null;
     if (live?.progress) {
-      const prev = live.progress.prev_stop;
-      if (visit.before.length === 0) {
+      const { prev_stop: prev, next_stop: next, progress } = live.progress;
+      const atPrev = progress <= AT_STOP_PROGRESS;
+      const atNext = progress >= 1 - AT_STOP_PROGRESS;
+      if ((atPrev && prev === atco) || (atNext && next === atco)) {
+        stopsAway = 0;
+      } else if (visit.before.length === 0) {
         // This is where the route starts: once the bus has passed a later
-        // stop it has left. Still on this stop means waiting or just pulling out.
+        // stop it has left. Still on this stop means just pulling out.
         if (prev !== atco) continue;
       } else {
-        const prevIndex = visit.before.lastIndexOf(prev);
+        // Count from the stop the bus is at, or else the one it last passed.
+        const from = atNext ? next : prev;
+        const fromIndex = visit.before.lastIndexOf(from);
         // The bus has already left this stop, or is somewhere past it.
-        if (prev === atco || prevIndex === -1) continue;
-        stopsAway = visit.before.length - prevIndex;
+        if (from === atco || fromIndex === -1) continue;
+        stopsAway = visit.before.length - fromIndex;
       }
     }
 

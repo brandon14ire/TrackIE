@@ -2,6 +2,8 @@
 // Tapping one opens all of its departures.
 import { BOARD_CACHE_MAX_AGE_MS, HORIZON_MS, boardCacheKey, loadBoard, type Board, type Departure } from './departures';
 import { countdown, departureTime, escapeHtml } from './format';
+import { getFollowed, onFollowChange, unfollow } from './follow';
+import { honk, renderFollowCard } from './follow-card';
 import { getStopInfo } from './stop-info';
 import { cacheGetStale, cacheSet, getFavourites, type SavedStop } from './store';
 import { TIME_ZONE } from './time';
@@ -130,6 +132,7 @@ function render(): void {
   root.innerHTML = `
     <section class="home">
       ${renderHeader()}
+      <div class="home-follow">${renderFollow()}</div>
       <div class="home-section">
         <h2>Your stops</h2>
         <a class="home-manage" href="#/settings">Manage</a>
@@ -137,6 +140,32 @@ function render(): void {
       <ul class="home-list">${stops.map((s) => renderRow(s, now)).join('')}</ul>
       <a class="add-stop" href="#/settings">${PLUS} Add a stop</a>
     </section>`;
+}
+
+function renderFollow(): string {
+  const f = getFollowed();
+  return f ? renderFollowCard(f, Date.now(), null) : '';
+}
+
+function updateFollow(): void {
+  const slot = root.querySelector('.home-follow');
+  if (slot) slot.innerHTML = renderFollow();
+}
+
+function announce(message: string): void {
+  const region = document.getElementById('announcer');
+  if (region) region.textContent = message;
+}
+
+function onClick(event: MouseEvent): void {
+  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action]');
+  if (!target) return;
+  if (target.dataset.action === 'unfollow') {
+    unfollow();
+    announce('Stopped following');
+  } else if (target.dataset.action === 'honk' && honk(target)) {
+    announce('Bus Spotter unlocked! Open the stop to see it.');
+  }
 }
 
 /** Redraws one row in place, so taps and focus elsewhere aren't disturbed. */
@@ -202,6 +231,7 @@ function tick(): void {
   if (!active || document.visibilityState !== 'visible') return;
   // Keep the countdowns current between fetches.
   for (const stop of stops) updateRow(stop.atco);
+  updateFollow();
   void refresh();
   // Weather is cached for 15 minutes, so this rarely makes a request.
   void refreshWeather();
@@ -219,6 +249,8 @@ export function showHome(container: HTMLElement): () => void {
   states.clear();
   for (const stop of stops) states.set(stop.atco, { board: cachedBoard(stop.atco), loading: false, failed: false });
   render();
+  root.addEventListener('click', onClick);
+  const stopWatchingFollow = onFollowChange(() => active && updateFollow());
   if (stops.length) {
     void refresh();
     void refreshWeather();
@@ -227,6 +259,8 @@ export function showHome(container: HTMLElement): () => void {
   }
   return () => {
     active = false;
+    stopWatchingFollow();
+    root.removeEventListener('click', onClick);
     window.clearInterval(timer);
     document.removeEventListener('visibilitychange', onVisibility);
   };
