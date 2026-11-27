@@ -2,7 +2,7 @@ import { escapeHtml } from './format';
 import { StopMap } from './map';
 import { locateNearby, renderNearbyList, updateNearbyList, type NearbyResult } from './nearby';
 import { installSection, promptInstall } from './pwa';
-import { getFavourites, getLastStop, removeFavourite } from './store';
+import { getFavourites, removeFavourite } from './store';
 
 let root: HTMLElement;
 let nearby: NearbyResult = { kind: 'idle' };
@@ -49,12 +49,11 @@ function renderNearby(): string {
 
 function render(): void {
   // Installed apps have no browser back button, so offer one here.
-  const last = getLastStop();
   root.innerHTML = `
     <section class="stops">
-      <a class="back" href="${last ? `#/stop/${encodeURIComponent(last)}` : '#/'}">
+      <a class="back" href="#/">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-        Back to departures
+        Your stops
       </a>
       <h1>Stops</h1>
 
@@ -131,7 +130,7 @@ function onInput(event: Event): void {
 export function showStops(container: HTMLElement): () => void {
   root = container;
   active = true;
-  document.title = 'Stops · Next Bus';
+  document.title = 'Stops · TrackIE';
   render();
   root.addEventListener('click', onClick);
   root.addEventListener('input', onInput);

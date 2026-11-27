@@ -1,5 +1,5 @@
 {
-  "name": "bus-app",
+  "name": "trackie",
   "private": true,
   "version": "1.0.0",
   "description": "Live bus departures PWA powered by bustimes.org data",

@@ -145,6 +145,10 @@ svg {
   }
 }
 
+.brand-ie {
+  color: var(--accent);
+}
+
 .brand img {
   border-radius: 7px;
 }
@@ -262,44 +266,14 @@ h2 {
   fill: currentColor;
 }
 
-/* The stop name is a dropdown of saved stops. */
 .stop-names {
   flex: 1;
   min-width: 0;
 }
 
-.picker {
-  position: relative;
-  display: block;
-}
-
-.picker select {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  min-height: 48px;
-  padding: 6px 40px 6px 14px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-
-.picker svg {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  width: 22px;
-  height: 22px;
-  transform: translateY(-50%);
-  color: var(--muted);
-  pointer-events: none;
+.stop-names h1 {
+  padding-top: 4px;
+  overflow-wrap: anywhere;
 }
 
 .chips {
@@ -750,6 +724,7 @@ h2 {
 
 .button {
   display: inline-flex;
+  text-decoration: none;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -880,25 +855,253 @@ input:not([type]) {
   border-color: #0f6b4f;
 }
 
-/* --- Welcome screen ----------------------------------------------------- */
+/* --- Main screen: saved stops ------------------------------------------ */
 
-.is-welcome .topbar {
+.home-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 0 24px;
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--badge) 22%, transparent), transparent 55%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--surface)), var(--surface) 75%);
+  box-shadow: var(--shadow);
+}
+
+.home-hello {
+  min-width: 0;
+}
+
+.home-hello h1 {
+  font-size: 1.5rem;
+}
+
+.home-hello p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.home-weather-slot:empty {
   display: none;
 }
 
-.welcome {
-  padding-top: max(12px, env(safe-area-inset-top));
+.home-weather {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-items: end;
+  column-gap: 6px;
+  flex: none;
+  text-align: right;
 }
 
-.welcome-logo {
-  display: block;
-  margin: 8px 0 14px;
+.home-weather .weather-icon {
+  width: 34px;
+  height: 34px;
 }
 
-.welcome-lede {
-  margin: 6px 0 20px;
-  font-size: 1.1rem;
+.home-temp {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.home-wx-text {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  font-size: 0.8rem;
   color: var(--muted);
+  white-space: nowrap;
+}
+
+.home-section {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 2px 10px;
+}
+
+.home-section h2 {
+  margin: 0;
+}
+
+.home-manage {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.home-list {
+  display: grid;
+  /* minmax(0, …) lets long destinations shorten instead of widening the cards. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stop-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 76px;
+  padding: 14px 10px 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.stop-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.stop-card:active {
+  transform: scale(0.985);
+}
+
+.home-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stop-card-name {
+  overflow: hidden;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.next-detail {
+  display: flex;
+  align-items: center;
+  min-height: 1.5rem;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.route-badge.tiny {
+  flex: none;
+  min-width: 2.3rem;
+  height: 1.5rem;
+  padding: 0 7px;
+  border-radius: 7px;
+  font-size: 0.8rem;
+}
+
+.next-dest {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.next-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  color: var(--live);
+  font-weight: 700;
+}
+
+/* The countdown sits in a soft pill, like a departure board readout. */
+.next-when {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  min-width: 64px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.next-when:empty {
+  display: none;
+}
+
+.next-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.next-unit {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.next-when:has(.next-skeleton) {
+  background: var(--surface-2);
+}
+
+.next-skeleton {
+  display: block;
+  width: 36px;
+  height: 20px;
+}
+
+.home .chevron {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--muted);
+}
+
+.add-stop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 56px;
+  margin-top: 12px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.add-stop:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* --- No stops yet ------------------------------------------------------- */
+
+.empty-start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18vh 8px 0;
+  text-align: center;
+}
+
+.empty-start img {
+  margin-bottom: 16px;
+}
+
+.empty-start p {
+  margin: 8px 0 24px;
 }
 
 /* --- Saved note on the board -------------------------------------------- */

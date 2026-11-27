@@ -14,6 +14,11 @@ import { addDays, localDate, parseClock, serviceTimeToEpoch } from './time';
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 
+/** The last board loaded for a stop, cached so it shows instantly next time. */
+export const boardCacheKey = (atco: string) => `board:${atco}`;
+/** A cached board older than this is too old to show while loading. */
+export const BOARD_CACHE_MAX_AGE_MS = 6 * HOUR;
+
 /** How far ahead to look for departures. */
 export const HORIZON_MS = 3 * HOUR;
 /** Quiet stops (e.g. rural ones) look this far ahead so they're not near empty. */

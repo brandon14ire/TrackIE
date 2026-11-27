@@ -1,27 +1,27 @@
-# Next Bus
+# TrackIE
 
 A small, installable web app (PWA) that shows live bus departures for your
 stop, using the same data as [bustimes.org](https://bustimes.org).
 
-The first time it opens (or any time no stops are saved) it shows a welcome
-screen listing the stops near you. If location is off, you pick your stop on
-a map instead. The first stop you open is saved, and the app opens there from
-then on. Saved stops make up the dropdown under the stop name at the top.
+The main screen is your list of saved stops. Tap one to see all of its
+departures; **Your stops** takes you back. Until you add a stop, the main
+screen says "No stops added yet" with an **Add a stop** button. The first stop
+you open is saved for you.
 
-- **Stops** (top right) finds more stops near you or on a map; **Back to
-  departures** returns to the board.
-- Tap **Save** on a stop to add it to the dropdown; tap it again (or the ✕ on
-  the Stops page) to remove it.
+- **Stops** (top right) finds stops near you or on a map.
+- Tap **Save** on a stop to add it to the main screen; tap it again (or the ✕
+  on the Stops page) to remove it.
 - Buttons for each route with a bus leaving soon filter the board. Every stop
   opens showing all routes.
 
 - Big "next bus" countdown, with live tracking, how many stops away the bus
   is, and whether it's running late.
-- Current weather at the stop (icon, temperature and chance of rain) from
+- The main screen greets you with the date and current weather near your
+  first saved stop (icon, temperature and chance of rain) from
   [Open-Meteo](https://open-meteo.com/), free and with no API key.
 - Tap the bell on any bus to follow it: a card shows it coming, and you get
   a notification when it's 10 minutes away. This runs in the app, so it needs
-  Next Bus open (phones pause web apps in the background).
+  TrackIE open (phones pause web apps in the background).
 - Refreshes every 30 seconds while it's open; pauses in the background.
 - Works offline: opens instantly and falls back to timetable times.
 - Find stops near you, or pick one on a map ([OpenStreetMap](https://www.openstreetmap.org/)

@@ -1,9 +1,9 @@
 import './style.css';
 import { showBoard } from './board';
-import { initPwa, isStandalone, promptInstall } from './pwa';
+import { initPwa } from './pwa';
 import { showStops } from './stops';
-import { showWelcome } from './welcome';
-import { getFavourites, pruneCache } from './store';
+import { showHome } from './home';
+import { pruneCache } from './store';
 import { onAlert, startFollowWatcher } from './follow';
 import { recordSpot } from './spotter';
 
@@ -17,14 +17,12 @@ function route(): void {
   const stopMatch = hash.match(/^\/stop\/([^/]+)$/);
 
   let next: string;
-  const [home] = getFavourites();
   if (stopMatch) next = `stop:${decodeURIComponent(stopMatch[1])}`;
   else if (hash === '/stops') next = 'stops';
-  else if (hash === '/welcome' && !home) next = 'welcome';
+  else if (hash === '/') next = 'home';
   else {
-    // Open on the first saved stop (the dropdown switches from there), or on
-    // the welcome screen when nothing is saved yet.
-    location.replace(home ? `#/stop/${encodeURIComponent(home.atco)}` : '#/welcome');
+    // The main screen is the list of saved stops.
+    location.replace('#/');
     return;
   }
   if (next === currentRoute) return;
@@ -32,46 +30,21 @@ function route(): void {
 
   teardown?.();
   window.scrollTo(0, 0);
-  // The welcome screen is a clean first step, without the top bar.
-  document.body.classList.toggle('is-welcome', next === 'welcome');
   teardown =
     next === 'stops'
       ? showStops(app)
-      : next === 'welcome'
-        ? showWelcome(app)
+      : next === 'home'
+        ? showHome(app)
         : showBoard(app, next.slice('stop:'.length));
-  if (next === 'stops' && scrollToInstall) {
-    scrollToInstall = false;
-    document.getElementById('install')?.scrollIntoView({ block: 'start' });
-  }
 
   document.querySelectorAll<HTMLAnchorElement>('[data-nav]').forEach((link) => {
-    const isCurrent = link.dataset.nav === (next === 'stops' ? 'stops' : 'board');
+    const isCurrent = link.dataset.nav === (next === 'stops' ? 'stops' : next === 'home' ? 'home' : '');
     if (isCurrent) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });
 }
 
-// The Install button in the top bar uses the browser's prompt when there is
-// one; otherwise it opens the steps at the bottom of the Stops page.
-const installButton = document.querySelector<HTMLButtonElement>('[data-install]')!;
-let scrollToInstall = false;
-
-function updateInstallButton(): void {
-  installButton.hidden = isStandalone();
-}
-
-installButton.addEventListener('click', async () => {
-  if (await promptInstall()) return;
-  scrollToInstall = true;
-  if (location.hash === '#/stops') currentRoute = '';
-  location.hash = '#/stops';
-  route();
-});
-
-updateInstallButton();
-
-// Every launch starts on the first saved stop. A stop left in the address
+// Every launch starts on the list of saved stops. A stop left in the address
 // from last time would otherwise win.
 // A refresh is different: it stays on the stop being looked at.
 const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
@@ -83,7 +56,6 @@ window.addEventListener('hashchange', route);
 route();
 
 initPwa(() => {
-  updateInstallButton();
   // Re-render the stops page so the install section appears or disappears.
   if (currentRoute === 'stops') {
     currentRoute = '';

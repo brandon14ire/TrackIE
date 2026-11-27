@@ -1,15 +1,13 @@
-import { fetchStop, stopPageUrl, type Stop } from './api';
-import { HORIZON_MS, loadBoard, sortLines, type Board, type Departure } from './departures';
+import { stopPageUrl } from './api';
+import { BOARD_CACHE_MAX_AGE_MS, HORIZON_MS, boardCacheKey, loadBoard, sortLines, type Board, type Departure } from './departures';
 import { countdown, departureTime, escapeHtml, punctuality, stopsAwayText } from './format';
 import {
-  cacheGet,
   cacheGetStale,
   cacheSet,
   getFavourite,
   getFavourites,
   removeFavourite,
   saveFavourite,
-  setLastStop,
 } from './store';
 import {
   ALERT_MINUTES,
@@ -24,15 +22,11 @@ import {
 } from './follow';
 import { spotter, spotterRank, tapBus } from './spotter';
 import { formatClock, minutesUntil } from './time';
-import { loadWeather, type Weather } from './weather';
-import { weatherIcon } from './weather-icons';
+import { getStopInfo, type StopInfo } from './stop-info';
 
 const REFRESH_MS = 30_000;
 const TICK_MS = 10_000;
-/** A saved board older than this is too old to show while loading. */
-const SNAPSHOT_MAX_AGE_MS = 6 * 60 * 60_000;
 
-type StopInfo = Pick<Stop, 'common_name' | 'long_name' | 'indicator' | 'location'>;
 
 interface State {
   /** Board key: one ATCO code, or several joined by commas. */
@@ -42,7 +36,6 @@ interface State {
   /** Routes shown; empty means every route. Resets when the stop is left. */
   routes: string[];
   board: Board | null;
-  weather: Weather | null;
   loading: boolean;
   error: string | null;
   /** No stops were saved when this one opened, so save it once its name is known. */
@@ -55,26 +48,6 @@ let state: State | null = null;
 let timer: number | undefined;
 let root: HTMLElement;
 
-function snapshotKey(atco: string) {
-  return `board:${atco}`;
-}
-
-async function getStopInfo(atco: string): Promise<StopInfo | null> {
-  const key = `stop:${atco}`;
-  const cached = cacheGet<StopInfo>(key) ?? null;
-  // Older versions cached stops without a location, which weather needs.
-  if (cached?.location) return cached;
-  const stop = await fetchStop(atco);
-  if (!stop) return null;
-  const info = {
-    common_name: stop.common_name,
-    long_name: stop.long_name,
-    indicator: stop.indicator,
-    location: stop.location,
-  };
-  cacheSet(key, info, 7 * 24 * 60 * 60_000);
-  return info;
-}
 
 /** The first stop someone opens becomes their saved stop, so the app opens there next time. */
 function maybeAutoSave(s: State): void {
@@ -83,13 +56,13 @@ function maybeAutoSave(s: State): void {
   if (getFavourites().length) return;
   saveFavourite({ atco: s.atco, name: stopTitle(s) });
   s.savedNote = true;
-  announce('Saved. Next Bus will open here.');
+  announce('Added to your stops.');
 }
 
 function renderSavedNote(): string {
   return `
     <div class="note" role="status">
-      <p><strong>Saved.</strong> Next Bus will open here. Add more stops from <strong>Stops</strong> (top right).</p>
+      <p><strong>Added to your stops.</strong> It's on the main screen now. Add more from <strong>Stops</strong> (top right).</p>
       <button class="icon-button" data-action="dismiss-note" aria-label="Dismiss">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
@@ -214,7 +187,7 @@ function renderFollow(s: State, now: number): string {
       </div>
       ${f.stopsAway !== null ? `<p class="follow-away">${stopsAwayText(f.stopsAway)}</p>` : ''}
       ${f.board !== s.atco ? `<p><a href="#/stop/${encodeURIComponent(f.board)}">Go to ${escapeHtml(f.stopName)}</a></p>` : ''}
-      <p class="follow-note">Keep Next Bus open: phones pause web apps in the background.</p>
+      <p class="follow-note">Keep TrackIE open: phones pause web apps in the background.</p>
       ${renderSpotter(f)}
     </section>`;
 }
@@ -280,47 +253,24 @@ function renderStatus(s: State, now: number): string {
   return bits.join('<span class="sep" aria-hidden="true">·</span>');
 }
 
-function renderWeather(w: Weather): string {
-  const rain = w.rainChance === null ? '' : `<span class="bit"><strong>${w.rainChance}%</strong> chance of rain</span>`;
-  return `
-    <p class="weather">
-      ${weatherIcon(w.kind, w.isDay)}
-      <span class="weather-text">
-        <span class="bit"><strong>${Math.round(w.temperature)}°</strong> ${escapeHtml(w.label)}</span>${rain}
-      </span>
-    </p>`;
-}
-
-// The header (with the stop dropdown) is only redrawn when it changes, so
-// the regular countdown updates never disturb the phone's picker.
+// The header is only redrawn when it changes, so the regular countdown
+// updates never move keyboard focus off its buttons.
 let lastHead = '';
 
 function renderHead(s: State): string {
   const favourite = getFavourite(s.atco);
-  // The stop name doubles as a dropdown for switching between saved stops.
-  // A native select gives the phone's own picker and works with screen readers.
-  const options = [...getFavourites()];
-  if (!favourite) options.unshift({ atco: s.atco, name: stopTitle(s) });
   return `
-    <h1 class="visually-hidden">${escapeHtml(stopTitle(s))}</h1>
+    <a class="back" href="#/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      Your stops
+    </a>
     <div class="stop-head">
       <div class="stop-names">
-        <label class="picker">
-          <span class="visually-hidden">Stop</span>
-          <select data-action="switch">
-            ${options
-              .map(
-                (f) =>
-                  `<option value="${escapeHtml(f.atco)}"${f.atco === s.atco ? ' selected' : ''}>${escapeHtml(f.name)}</option>`,
-              )
-              .join('')}
-          </select>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-        </label>
+        <h1>${escapeHtml(stopTitle(s))}</h1>
         <p class="stop-sub">${escapeHtml(stopSubtitle(s))}</p>
       </div>
       <button class="save" data-action="favourite" aria-pressed="${Boolean(favourite)}"
-        aria-label="Save stop" title="Saved stops appear in this dropdown and on the Stops page">
+        aria-label="Save stop" title="Saved stops appear on the main screen">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>
         <span aria-hidden="true">${favourite ? 'Saved' : 'Save'}</span>
       </button>
@@ -373,12 +323,10 @@ function renderBody(s: State, now: number): string {
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5"/></svg>
       </button>
     </div>
-    ${s.weather ? renderWeather(s.weather) : ''}
     ${departures}
     <p class="credit">
       Times from <a href="${stopPageUrl(s.atcos[0])}" target="_blank" rel="noopener">bustimes.org</a>,
       using public transport open data.
-      Weather by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>.
     </p>`;
 }
 
@@ -424,7 +372,7 @@ async function refresh(manual = false): Promise<void> {
   s.loading = true;
   render();
   try {
-    // Stops saved by older versions lack the location the weather needs.
+    // Stop names come from a cache; fetch any not seen before.
     const missing = s.atcos.filter((a) => !s.stops[a]?.location);
     const [board, infos] = await Promise.all([loadBoard(s.atcos, s.routes), Promise.all(missing.map(getStopInfo))]);
     if (state !== s) return; // Navigated away while loading.
@@ -435,8 +383,7 @@ async function refresh(manual = false): Promise<void> {
     });
     s.error = null;
     maybeAutoSave(s);
-    cacheSet(snapshotKey(s.atco), board, SNAPSHOT_MAX_AGE_MS);
-    void refreshWeather(s);
+    cacheSet(boardCacheKey(s.atco), board, BOARD_CACHE_MAX_AGE_MS);
     if (manual) announce('Departures updated');
   } catch (err) {
     if (state !== s) return;
@@ -448,20 +395,6 @@ async function refresh(manual = false): Promise<void> {
       s.loading = false;
       render();
     }
-  }
-}
-
-/** Weather is a nice extra: if it fails, the board simply goes without. */
-async function refreshWeather(s: State): Promise<void> {
-  const location = s.stops[s.atcos[0]]?.location;
-  if (!location) return;
-  try {
-    const weather = await loadWeather(location);
-    if (state !== s) return;
-    s.weather = weather;
-    render();
-  } catch {
-    // Leave out the weather line.
   }
 }
 
@@ -487,13 +420,13 @@ function onClick(event: MouseEvent): void {
     case 'favourite': {
       const saved = getFavourite(atco);
       if (saved) {
-        // One tap on "Saved" shouldn't silently drop a stop from the dropdown.
+        // One tap on "Saved" shouldn't silently drop a stop from the main screen.
         if (!window.confirm(`Remove ${saved.name} from your stops?`)) break;
         removeFavourite(atco);
         announce('Removed from saved stops');
       } else {
         saveFavourite({ atco, name: stopTitle(state) });
-        announce('Saved. It now appears in your saved stops.');
+        announce('Saved. It now appears on the main screen.');
       }
       render();
       break;
@@ -530,13 +463,6 @@ function onClick(event: MouseEvent): void {
       break;
     }
   }
-}
-
-function onChange(event: Event): void {
-  const select = event.target as HTMLSelectElement;
-  if (select.dataset.action !== 'switch' || !state || select.value === state.atco) return;
-  select.blur();
-  location.hash = `#/stop/${encodeURIComponent(select.value)}`;
 }
 
 /** The secret: tap the bus five times quickly. After that, it honks. */
@@ -585,9 +511,8 @@ export function showBoard(container: HTMLElement, atco: string): () => void {
   root = container;
   root.innerHTML = '';
   const atcos = atco.split(',').filter(Boolean);
-  setLastStop(atco);
-  const snapshot = cacheGetStale<Board>(snapshotKey(atco));
-  const fresh = snapshot && Date.now() - snapshot.fetchedAt < SNAPSHOT_MAX_AGE_MS ? snapshot : null;
+  const snapshot = cacheGetStale<Board>(boardCacheKey(atco));
+  const fresh = snapshot && Date.now() - snapshot.fetchedAt < BOARD_CACHE_MAX_AGE_MS ? snapshot : null;
   state = {
     atco,
     atcos,
@@ -599,21 +524,19 @@ export function showBoard(container: HTMLElement, atco: string): () => void {
       }),
     ),
     board: fresh,
-    weather: null,
     loading: false,
     error: null,
     autoSave: getFavourites().length === 0,
     savedNote: false,
   };
   maybeAutoSave(state);
-  document.title = `${stopTitle(state)} · Next Bus`;
+  document.title = `${stopTitle(state)} · TrackIE`;
   render();
   void refresh().then(() => {
-    if (state?.atco === atco) document.title = `${stopTitle(state)} · Next Bus`;
+    if (state?.atco === atco) document.title = `${stopTitle(state)} · TrackIE`;
   });
 
   root.addEventListener('click', onClick);
-  root.addEventListener('change', onChange);
   const stopWatchingFollow = onFollowChange(render);
   document.addEventListener('visibilitychange', onVisibility);
   window.addEventListener('online', onOnline);
@@ -623,7 +546,6 @@ export function showBoard(container: HTMLElement, atco: string): () => void {
     state = null;
     window.clearInterval(timer);
     root.removeEventListener('click', onClick);
-    root.removeEventListener('change', onChange);
     stopWatchingFollow();
     document.removeEventListener('visibilitychange', onVisibility);
     window.removeEventListener('online', onOnline);
