@@ -50,14 +50,14 @@ function renderNearby(): string {
 function render(): void {
   // Installed apps have no browser back button, so offer one here.
   root.innerHTML = `
-    <section class="stops">
+    <section class="stops settings">
       <a class="back" href="#/">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
         Your stops
       </a>
-      <h1>Stops</h1>
+      <h1>Settings</h1>
 
-      <h2>Saved</h2>
+      <h2>Saved stops</h2>
       ${renderSaved()}
 
       <h2>Find a stop</h2>
@@ -75,6 +75,14 @@ function render(): void {
       ${mapOpen ? '<div id="map-slot"></div>' : ''}
 
       ${installSection()}
+
+      <h2>About</h2>
+      <p class="about">
+        Bus times from <a href="https://bustimes.org" target="_blank" rel="noopener">bustimes.org</a>,
+        using public transport open data.
+        Weather by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>.
+        Maps &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors.
+      </p>
 
       <p class="version">Version ${escapeHtml(__APP_VERSION__)}</p>
     </section>`;
@@ -127,10 +135,10 @@ function onInput(event: Event): void {
   updateNearbyList(root, nearby.stops, filterText);
 }
 
-export function showStops(container: HTMLElement): () => void {
+export function showSettings(container: HTMLElement): () => void {
   root = container;
   active = true;
-  document.title = 'Stops · TrackIE';
+  document.title = 'Settings · TrackIE';
   render();
   root.addEventListener('click', onClick);
   root.addEventListener('input', onInput);

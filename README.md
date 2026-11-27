@@ -8,9 +8,10 @@ departures; **Your stops** takes you back. Until you add a stop, the main
 screen says "No stops added yet" with an **Add a stop** button. The first stop
 you open is saved for you.
 
-- **Stops** (top right) finds stops near you or on a map.
+- **Settings** (top right) is where you find stops near you or on a map,
+  manage saved stops, and install the app.
 - Tap **Save** on a stop to add it to the main screen; tap it again (or the ✕
-  on the Stops page) to remove it.
+  on the Settings page) to remove it.
 - Buttons for each route with a bus leaving soon filter the board. Every stop
   opens showing all routes.
 
@@ -68,7 +69,7 @@ npm run build    # type-check and production build into dist/
 
 ## Install on a phone
 
-- **Android (Chrome)**: open the site, then tap **Install app** on the Stops
+- **Android (Chrome)**: open the site, then tap **Install app** on the Settings
   screen, or use the browser menu → **Add to Home screen**.
 - **iPhone (Safari)**: tap **Share** → **Add to Home Screen**.
 

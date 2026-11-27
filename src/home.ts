@@ -122,7 +122,7 @@ function render(): void {
         <img src="favicon.svg" alt="" width="56" height="56">
         <h1>No stops added yet</h1>
         <p class="muted">Add a stop to see its live departures here.</p>
-        <a class="button primary" href="#/stops">${PLUS} Add a stop</a>
+        <a class="button primary" href="#/settings">${PLUS} Add a stop</a>
       </section>`;
     return;
   }
@@ -132,11 +132,10 @@ function render(): void {
       ${renderHeader()}
       <div class="home-section">
         <h2>Your stops</h2>
-        <a class="home-manage" href="#/stops">Manage</a>
+        <a class="home-manage" href="#/settings">Manage</a>
       </div>
       <ul class="home-list">${stops.map((s) => renderRow(s, now)).join('')}</ul>
-      <a class="add-stop" href="#/stops">${PLUS} Add a stop</a>
-      ${weather ? '<p class="credit">Weather by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>.</p>' : ''}
+      <a class="add-stop" href="#/settings">${PLUS} Add a stop</a>
     </section>`;
 }
 
@@ -191,16 +190,9 @@ async function refreshWeather(): Promise<void> {
     if (!info?.location) return;
     const data = await loadWeather(info.location);
     if (!active) return;
-    const hadWeather = weather !== null;
     weather = { data, place: first.name };
     const slot = root.querySelector('.home-weather-slot');
     if (slot) slot.innerHTML = renderWeather();
-    if (!hadWeather && !root.querySelector('.credit')) {
-      root.querySelector('.home')?.insertAdjacentHTML(
-        'beforeend',
-        '<p class="credit">Weather by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>.</p>',
-      );
-    }
   } catch {
     // Leave the weather out.
   }

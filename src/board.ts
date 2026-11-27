@@ -62,7 +62,7 @@ function maybeAutoSave(s: State): void {
 function renderSavedNote(): string {
   return `
     <div class="note" role="status">
-      <p><strong>Added to your stops.</strong> It's on the main screen now. Add more from <strong>Stops</strong> (top right).</p>
+      <p><strong>Added to your stops.</strong> It's on the main screen now. Add more from <strong>Settings</strong> (top right).</p>
       <button class="icon-button" data-action="dismiss-note" aria-label="Dismiss">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
