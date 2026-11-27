@@ -20,9 +20,9 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png'],
       manifest: {
         id: base,
-        name: 'Next Bus',
-        short_name: 'Next Bus',
-        description: 'Live bus departures for your stop, powered by bustimes.org.',
+        name: 'TrackIE',
+        short_name: 'TrackIE',
+        description: 'Live bus tracking and departures for your stop, powered by bustimes.org.',
         lang: 'en',
         start_url: base,
         scope: base,

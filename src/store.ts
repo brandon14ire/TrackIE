@@ -60,7 +60,6 @@ export interface SavedStop {
 }
 
 const FAVOURITES_KEY = 'favourites';
-const LAST_STOP_KEY = 'lastStop';
 
 /** The stops the user saved, in the order they saved them. */
 export function getFavourites(): SavedStop[] {
@@ -78,15 +77,6 @@ export function saveFavourite(stop: SavedStop): void {
 
 export function removeFavourite(atco: string): void {
   write(FAVOURITES_KEY, JSON.stringify(getFavourites().filter((f) => f.atco !== atco)));
-}
-
-/** The last stop viewed, for the Stops page's back link. */
-export function getLastStop(): string | null {
-  return read(LAST_STOP_KEY);
-}
-
-export function setLastStop(atco: string): void {
-  write(LAST_STOP_KEY, atco);
 }
 
 // --- Expiring cache ------------------------------------------------------

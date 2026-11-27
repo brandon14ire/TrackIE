@@ -77,7 +77,7 @@ export function installSection(): string {
   if (isStandalone()) return '';
   return `
     <h2 id="install">Install</h2>
-    <p class="muted">Add Next Bus to your home screen so it opens like an app, even with no signal.</p>
+    <p class="muted">Add TrackIE to your home screen so it opens like an app, even with no signal.</p>
     <button class="button primary" data-action="install">Add to home screen</button>
     ${showSteps ? `<div class="install-steps" role="status">${installSteps()}</div>` : ''}`;
 }
