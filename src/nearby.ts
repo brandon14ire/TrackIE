@@ -1,4 +1,4 @@
-// Finding stops near the phone, shared by the welcome screen and Stops page.
+// Finding stops near the phone, used by the Settings page.
 import { fetchStopsInBox, type NearbyStop } from './api';
 import { distanceMetres, distanceText, escapeHtml } from './format';
 

@@ -6,7 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 // the right base path in. Locally the app is served from the root.
 const base = process.env.BASE_PATH ?? '/';
 
-// Shown on the Stops page so it's easy to tell which version a phone has.
+// Shown on the Settings page so it's easy to tell which version a phone has.
 const version = `${(process.env.GITHUB_SHA ?? 'dev').slice(0, 7)} · ${new Date().toISOString().slice(0, 10)}`;
 
 export default defineConfig({
@@ -36,7 +36,7 @@ export default defineConfig({
           { src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },
           { src: 'maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
-        shortcuts: [{ name: 'Stops', url: `${base}#/stops`, icons: [{ src: 'pwa-192.png', sizes: '192x192' }] }],
+        shortcuts: [{ name: 'Settings', url: `${base}#/settings`, icons: [{ src: 'pwa-192.png', sizes: '192x192' }] }],
       },
       workbox: {
         importScripts: ['sw-notify.js'],

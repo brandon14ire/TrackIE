@@ -651,7 +651,7 @@ h2 {
   text-align: center;
 }
 
-/* --- Stops page --------------------------------------------------------- */
+/* --- Settings page --------------------------------------------------------- */
 
 .back {
   display: inline-flex;
@@ -1120,6 +1120,12 @@ input:not([type]) {
 .note p {
   flex: 1;
   margin: 8px 0;
+}
+
+.about {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
 #install {

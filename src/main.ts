@@ -1,7 +1,7 @@
 import './style.css';
 import { showBoard } from './board';
 import { initPwa } from './pwa';
-import { showStops } from './stops';
+import { showSettings } from './settings';
 import { showHome } from './home';
 import { pruneCache } from './store';
 import { onAlert, startFollowWatcher } from './follow';
@@ -18,7 +18,12 @@ function route(): void {
 
   let next: string;
   if (stopMatch) next = `stop:${decodeURIComponent(stopMatch[1])}`;
-  else if (hash === '/stops') next = 'stops';
+  else if (hash === '/settings') next = 'settings';
+  else if (hash === '/stops') {
+    // The Stops page became Settings; keep old links and shortcuts working.
+    location.replace('#/settings');
+    return;
+  }
   else if (hash === '/') next = 'home';
   else {
     // The main screen is the list of saved stops.
@@ -31,14 +36,14 @@ function route(): void {
   teardown?.();
   window.scrollTo(0, 0);
   teardown =
-    next === 'stops'
-      ? showStops(app)
+    next === 'settings'
+      ? showSettings(app)
       : next === 'home'
         ? showHome(app)
         : showBoard(app, next.slice('stop:'.length));
 
   document.querySelectorAll<HTMLAnchorElement>('[data-nav]').forEach((link) => {
-    const isCurrent = link.dataset.nav === (next === 'stops' ? 'stops' : next === 'home' ? 'home' : '');
+    const isCurrent = link.dataset.nav === (next === 'settings' ? 'settings' : next === 'home' ? 'home' : '');
     if (isCurrent) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });
@@ -57,7 +62,7 @@ route();
 
 initPwa(() => {
   // Re-render the stops page so the install section appears or disappears.
-  if (currentRoute === 'stops') {
+  if (currentRoute === 'settings') {
     currentRoute = '';
     route();
   }
