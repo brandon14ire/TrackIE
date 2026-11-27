@@ -1,6 +1,6 @@
 :root {
   color-scheme: light dark;
-  --bg: #f6f7f9;
+  --bg: #f6f7f9; /* Also the status bar colour: keep index.html and vite.config.ts in step. */
   --surface: #ffffff;
   --surface-2: #eef1f4;
   --text: #14181d;
@@ -21,7 +21,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #101418;
+    --bg: #101418; /* Also the dark status bar colour in index.html. */
     --surface: #1a2027;
     --surface-2: #232b34;
     --text: #eef2f6;
@@ -138,13 +138,6 @@ svg {
   white-space: nowrap;
 }
 
-/* On the narrowest phones, the icon alone leaves room for both buttons. */
-@media (max-width: 359px) {
-  .brand span {
-    display: none;
-  }
-}
-
 .brand-ie {
   color: var(--accent);
 }
@@ -172,6 +165,18 @@ svg {
   font-weight: 600;
   text-decoration: none;
   background: var(--surface-2);
+}
+
+/* Settings is just the gear: a round 44px button. */
+.nav-link.icon-only {
+  justify-content: center;
+  width: 44px;
+  padding: 0;
+}
+
+.nav-link.icon-only svg {
+  width: 22px;
+  height: 22px;
 }
 
 .nav-link[hidden] {
@@ -420,7 +425,7 @@ h2 {
 }
 
 .hero {
-  padding: 20px;
+  padding: 14px 16px;
   border-radius: var(--radius);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -430,23 +435,27 @@ h2 {
 .hero-route {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .hero-dest {
-  font-size: 1.2rem;
+  flex: 1;
+  min-width: 0;
+  font-size: 1.1rem;
   font-weight: 700;
+  line-height: 1.25;
 }
 
 .hero-countdown {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin: 14px 0 6px;
+  gap: 4px;
+  flex: none;
+  white-space: nowrap;
 }
 
 .hero-value {
-  font-size: clamp(3.5rem, 18vw, 5rem);
+  font-size: 2.25rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -454,30 +463,50 @@ h2 {
 }
 
 .hero-unit {
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--muted);
 }
 
 .hero-meta,
 .row-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   color: var(--muted);
 }
 
+/* Items are spaced apart rather than dotted, so wrapping never strands a dot. */
 .hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 14px;
+}
+
+.row-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.hero-meta {
+  margin-top: 8px;
   font-weight: 600;
 }
 
 .hero-times {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 0.9rem;
+  font-weight: 400;
 }
 
 .hero-times strong {
+  color: var(--text);
+}
+
+/* A timetabled time that live tracking has moved: <s>18:00</s> 18:04. */
+.clock s {
+  color: var(--muted);
+  text-decoration-thickness: 2px;
+}
+
+.row-clock .clock strong {
   color: var(--text);
 }
 
@@ -518,7 +547,7 @@ h2 {
 }
 
 .hero .from {
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .row .from {
@@ -558,9 +587,6 @@ h2 {
   padding: 14px 16px;
 }
 
-.row + .row {
-  border-top: 1px solid var(--border);
-}
 
 .row-main {
   flex: 1;
@@ -576,6 +602,46 @@ h2 {
 
 .row-meta {
   font-size: 0.85rem;
+}
+
+.row-meta .live {
+  display: inline;
+  font-weight: 600;
+}
+
+/* Inline, so a status too long for the row ends in "…" rather than being cut. */
+.row-meta .live-dot {
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+
+/* Each status item stays on one line; a long one shortens with "…". */
+.row-meta > div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Small phones: tighten the row so the middle column keeps room for words. */
+@media (max-width: 359px) {
+  .row {
+    gap: 8px;
+    padding: 12px 10px;
+  }
+
+  .row .route-badge.small {
+    min-width: 2.5rem;
+    padding: 0 6px;
+  }
+
+  .row-value {
+    font-size: 1.2rem;
+  }
+
+  .row-meta {
+    font-size: 0.8rem;
+  }
 }
 
 .row-when {
@@ -1172,45 +1238,116 @@ input:not([type]) {
 
 /* --- Following a bus ---------------------------------------------------- */
 
-.bell {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 44px;
-  height: 44px;
-  margin-left: auto;
-  border: 1px solid var(--border);
-  border-radius: 50%;
+/* Swipe a departure left to reveal the alert button behind it. */
+.swipe {
+  position: relative;
+  overflow: hidden;
+}
+
+.swipe-content {
+  position: relative;
+  z-index: 1;
   background: var(--surface);
-  color: var(--muted);
+  touch-action: pan-y;
+  transition: transform 0.22s ease;
+}
+
+.swipe.dragging .swipe-content {
+  transition: none;
+}
+
+.swipe.open .swipe-content,
+.swipe:focus-within .swipe-content {
+  transform: translateX(-96px);
+}
+
+.swipe-action {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 96px;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
 }
 
-.bell[aria-pressed='true'] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
+.swipe-action svg {
+  width: 22px;
+  height: 22px;
 }
 
-.bell[aria-pressed='true'] svg {
+/* Invisible while closed, so it can't peek out at the rounded corners. Still
+   focusable: tabbing to it slides the row open (:focus-within above). */
+.swipe:not(.open):not(.dragging):not(:focus-within) .swipe-action {
+  opacity: 0;
+}
+
+.swipe-action.on {
+  background: var(--late);
+  color: #ffffff;
+}
+
+.hero-swipe {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.hero-swipe .hero {
+  box-shadow: none;
+}
+
+.list > li + li {
+  border-top: 1px solid var(--border);
+}
+
+.swipe-hint {
+  margin: 8px 2px 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* The bus being followed: a small bell beside its time. */
+.followed-mark svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  color: var(--accent);
   fill: currentColor;
+  vertical-align: -2px;
 }
 
-.row .bell {
-  width: 40px;
-  height: 40px;
-  margin-left: 4px;
+.hero .followed-mark svg {
+  width: 20px;
+  height: 20px;
+  margin: 0;
 }
 
+/* The slim "Following" strip, on the main screen and stop screens. */
 .follow {
   position: relative;
-  margin: 12px 0 16px;
-  padding: 16px;
-  border-radius: var(--radius);
-  border: 2px solid var(--accent);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--surface)), var(--surface) 60%);
-  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 14px;
+  padding: 8px 4px 10px 8px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
   overflow: hidden;
+}
+
+.board .follow {
+  margin-top: 12px;
 }
 
 .follow.alerted {
@@ -1219,119 +1356,144 @@ input:not([type]) {
 
 @keyframes follow-pulse {
   50% {
-    box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 30%, transparent);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent);
   }
 }
 
-.follow-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.follow-title {
-  flex: 1;
-  min-width: 0;
-  line-height: 1.3;
-}
-
-.follow-title span {
-  display: block;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.follow-stop {
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.follow-body {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 12px;
-  margin: 12px 0 4px;
-}
-
-.follow-count {
-  font-size: 1.1rem;
-  color: var(--muted);
-}
-
-.follow-count strong {
-  font-size: 2.4rem;
-  font-weight: 800;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-
-.follow-status {
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.road {
+.follow-bus {
   position: relative;
-  height: 52px;
-  margin: 8px 0 4px;
-}
-
-.road-line {
-  position: absolute;
-  left: 0;
-  right: 28px;
-  bottom: 8px;
-  border-bottom: 4px dashed var(--border);
-}
-
-.road-bus {
-  position: absolute;
-  z-index: 1;
-  bottom: 6px;
-  width: 44px;
-  height: 44px;
+  flex: none;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
-  transition: left 1s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.road-bus svg {
-  width: 44px;
-  height: 44px;
+.follow-bus svg {
+  width: 40px;
+  height: 40px;
 }
 
-.road-bus.honking {
+.follow-bus.honking {
   animation: honk 0.5s ease;
+}
+
+.follow-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.follow-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.follow-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.follow-dest {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.follow-sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.follow-sub .live {
+  font-weight: 600;
+}
+
+.follow-alert {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.follow-when {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.follow-when strong {
+  color: var(--accent);
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.follow-stop {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.follow-stop svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Fills along the bottom over the bus's last half hour. */
+.follow-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: calc(var(--progress) * 100%);
+  background: var(--accent);
+  transition: width 1s ease;
 }
 
 @keyframes honk {
   25% {
-    transform: translateY(-8px) rotate(-6deg);
+    transform: translateY(-6px) rotate(-6deg);
   }
   50% {
     transform: translateY(0) rotate(4deg);
   }
   75% {
-    transform: translateY(-4px) rotate(-2deg);
+    transform: translateY(-3px) rotate(-2deg);
   }
 }
 
 .beep {
   position: absolute;
-  left: 50%;
-  bottom: 100%;
-  transform: translateX(-50%);
+  left: 100%;
+  top: 0;
   padding: 2px 8px;
   border-radius: 10px;
   background: var(--text);
@@ -1345,40 +1507,16 @@ input:not([type]) {
 @keyframes beep {
   from {
     opacity: 0;
-    transform: translate(-50%, 6px);
+    transform: translateY(6px);
   }
   20%,
   80% {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
   }
-}
-
-.road-stop {
-  position: absolute;
-  pointer-events: none;
-  right: 0;
-  bottom: 4px;
-  font-size: 1.6rem;
-  line-height: 1;
-}
-
-.follow-away {
-  margin: 0;
-  font-weight: 600;
-}
-
-.follow-note {
-  margin: 8px 0 0;
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
-.follow p:not([class]) {
-  margin: 8px 0 0;
 }
 
 .spotter {

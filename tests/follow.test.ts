@@ -64,8 +64,12 @@ describe('following a bus', () => {
   it('writes a friendly notification', () => {
     expect(alertText(followed({ scheduled: now + 10 * MIN, stopsAway: 4 }), now)).toEqual({
       title: '🚌 Your 302 is 10 min away',
-      body: 'To City Centre from Limerick TUS, due 13:10 · 4 stops away. Time to head to the stop!',
+      body: 'To City Centre from Limerick TUS, at 13:10 · 4 stops away. Time to head to the stop!',
     });
+    // Running late: say the new time and the timetabled one it replaces.
+    expect(alertText(followed({ scheduled: now + 10 * MIN, expected: now + 14 * MIN }), now).body).toBe(
+      'To City Centre from Limerick TUS, now 13:14, not 13:10. Time to head to the stop!',
+    );
     expect(alertText(followed({ scheduled: now + 30_000 }), now).title).toBe('🚌 Your 302 is due now!');
   });
 });

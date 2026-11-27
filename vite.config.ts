@@ -28,8 +28,11 @@ export default defineConfig({
         scope: base,
         display: 'standalone',
         orientation: 'portrait',
+        // The page background (--bg), so the status bar and splash screen match
+        // the app. The manifest can't vary by light or dark mode; index.html
+        // switches the status bar to the dark background once the app is open.
         background_color: '#f6f7f9',
-        theme_color: '#0f6b4f',
+        theme_color: '#f6f7f9',
         categories: ['travel', 'navigation'],
         icons: [
           { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },

@@ -106,6 +106,20 @@ describe('buildDepartures', () => {
     expect(buildDepartures(STOP, [scheduled(1, '15:55'), scheduled(2, '15:58')], [passedHere, beyond], now)).toEqual([]);
   });
 
+  it('says a bus is at the stop when it has pulled in, rather than dropping it', () => {
+    const justArrived = vehicle(1, { progress: { prev_stop: STOP, next_stop: 'Z', progress: 0 } });
+    const pullingIn = vehicle(2, { progress: { prev_stop: 'D', next_stop: STOP, progress: 1 } });
+    const [a, b] = buildDepartures(STOP, [scheduled(1, '15:52'), scheduled(2, '15:53')], [justArrived, pullingIn], now);
+    expect(a).toMatchObject({ tripId: 1, stopsAway: 0 });
+    expect(b).toMatchObject({ tripId: 2, stopsAway: 0 });
+  });
+
+  it('counts from the next stop once the bus has reached it', () => {
+    // Reached C, with D and then this stop still to go.
+    const atC = vehicle(1, { progress: { prev_stop: 'B', next_stop: 'C', progress: 1 } });
+    expect(buildDepartures(STOP, [scheduled(1, '15:55')], [atC], now)[0].stopsAway).toBe(2);
+  });
+
   it('drops untracked buses once their time has gone', () => {
     expect(buildDepartures(STOP, [scheduled(1, '15:45')], [], now)).toEqual([]);
   });
@@ -136,11 +150,11 @@ describe('buildDepartures', () => {
     expect(buildDepartures(STOP, [scheduled(1, '15:40', [])], [gone], now)).toEqual([]);
   });
 
-  it('keeps a bus waiting at the stop where its route starts', () => {
+  it('keeps a bus waiting at the stop where its route starts, and says it is there', () => {
     const atTerminus = vehicle(1, { progress: { prev_stop: STOP, next_stop: 'A', progress: 0 } });
     const [d] = buildDepartures(STOP, [scheduled(1, '15:55', [])], [atTerminus], now);
     expect(d.tripId).toBe(1);
-    expect(d.stopsAway).toBeNull();
+    expect(d.stopsAway).toBe(0);
   });
 });
 
